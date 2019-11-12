@@ -262,3 +262,63 @@ The only change I've made is to add for loops right after the username and passw
 If you try to submit the form with an empty username or password, you will now get a nice error message in red.
 
 **Webpage Image Displaying [This field is required]**
+
+
+## Generating Links
+
+The login form is fairly complete now, but before closing this chapter I wanted to discuss the proper way to include links in templates and redirects. So far you have seen a few instances in which links are defined. For example, this is the current navigation bar in the base template:
+
+```
+    <div>
+        Microblog:
+        <a href="/index">Home</a>
+        <a href="/login">Login</a>
+    </div>
+```
+        
+The login view function also defines a link that is passed to the `redirect()` function:
+
+```
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        # ...
+        return redirect('/index')
+    # ...
+```
+        
+One problem with writing links directly in templates and source files is that if one day you decide to reorganize your links, then you are going to have to search and replace these links in your entire application.
+
+To have better control over these links, Flask provides a function called `url_for()`, which generates URLs using its internal mapping of URLs to view functions. For example, the expression `url_for('login')` returns `/login`, and `url_for('index')` return `'/index`. The argument to `url_for()` is the endpoint name, which is the name of the view function.
+
+You may ask why is it better to use the function names instead of URLs. The fact is that URLs are much more likely to change than view function names, which are completely internal. A secondary reason is that, as you will learn later, some URLs have dynamic components in them, so generating those URLs by hand would require concatenating multiple elements, which is tedious and error prone. The `url_for()` is also able to generate these complex URLs.
+
+So from now on, I'm going to use `url_for()` every time I need to generate an application URL. The navigation bar in the base template then becomes:
+
+*app/templates/base.html: Use url\_for() function for links*
+```
+    <div>
+        Microblog:
+        <a href="{{ url_for('index') }}">Home</a>
+        <a href="{{ url_for('login') }}">Login</a>
+    </div>
+```
+        
+And here is the updated `login()` view function:
+
+*app/routes.py: Use url\_for() function for links*
+```
+from flask import render_template, flash, redirect, url_for
+
+# ...
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        # ...
+        return redirect(url_for('index'))
+    # ...
+```        
+
